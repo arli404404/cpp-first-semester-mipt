@@ -67,4 +67,5 @@ int main() {
       std::cout << "error\n";
     }
   }
+  return 0;
 }
