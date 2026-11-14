@@ -1,4 +1,5 @@
 #include <iostream>
+#include <memory>
 #include <string>
 #include <utility>
 #include <vector>
@@ -46,7 +47,8 @@ class Bike : public Vehicle {
   std::string describe() const override { return "Bike"; }
 
   void print() const {
-    std::cout << id_ << " " << name_ << " " << describe()<< " " << noviceFriendly() << '\n';
+    std::cout << id_ << " " << name_ << " " << describe() << " "
+              << noviceFriendly() << '\n';
   }
 };
 
@@ -58,8 +60,8 @@ class Scooter : public Vehicle, public EnergyConsumer {
   double dailyEnergy() const override { return energy_; }
 
   void print() const {
-    std::cout << id_ << " " << name_ << " "<< describe()<< " " << noviceFriendly()<< " "
-              << dailyEnergy() << '\n';
+    std::cout << id_ << " " << name_ << " " << describe() << " "
+              << noviceFriendly() << " " << dailyEnergy() << '\n';
   }
 };
 
@@ -71,8 +73,8 @@ class EBike : public Vehicle, public EnergyConsumer {
   double dailyEnergy() const override { return energy_; }
 
   void print() const {
-    std::cout << id_ << " " << name_<< " " << describe()<< " " << noviceFriendly()<< " "
-              << dailyEnergy() << '\n';
+    std::cout << id_ << " " << name_ << " " << describe() << " "
+              << noviceFriendly() << " " << dailyEnergy() << '\n';
   }
 };
 
@@ -85,12 +87,15 @@ class Dock : public InventoryItem, public EnergyConsumer {
 
  public:
   Dock(std::string id, std::string name, double energy)
-      :  EnergyConsumer(energy), id_(std::move(id)), name_(std::move(name)) {}
+      : EnergyConsumer(energy), id_(std::move(id)), name_(std::move(name)) {}
   std::string inventoryId() const override { return id_; }
   std::string name() const override { return name_; }
   std::string describe() const override { return "Dock"; }
   double dailyEnergy() const override { return energy_; }
-  void print() const { std::cout << id_ << " " << name_<< " " << describe()<< " " << dailyEnergy()<< " " << '\n'; }
+  void print() const {
+    std::cout << id_ << " " << name_ << " " << describe() << " "
+              << dailyEnergy() << " " << '\n';
+  }
 };
 
 class Helmet : public InventoryItem {
@@ -104,8 +109,13 @@ class Helmet : public InventoryItem {
   std::string inventoryId() const override { return id_; }
   std::string name() const override { return name_; }
   std::string describe() const override { return "Helmet"; }
-  void print() const { std::cout << id_ << " " << name_<< " " << describe() << '\n'; }
+  void print() const {
+    std::cout << id_ << " " << name_ << " " << describe() << '\n';
+  }
 };
+
+// creating basic elements of our inventory
+std::vector<std::unique_ptr<InventoryItem>> items_;
 
 int main() {
   Helmet h1("H-1", "ya_mob_I_love_yandex");
@@ -118,7 +128,7 @@ int main() {
   // added vehicles
   Bike bike1("B-1", "wrooom", 0);
   Scooter scooter1("S-1", "Turbo67", 6, 2.0);
-  EBike ebike1("B-1", "Pro", 7, 1.0);
+  EBike ebike1("E-1", "Pro", 7, 1.0);
 
   bike1.print();
   scooter1.print();
