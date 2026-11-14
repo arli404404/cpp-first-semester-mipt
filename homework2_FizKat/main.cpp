@@ -128,9 +128,13 @@ class Bike : public Vehicle {
 class Scooter : public Vehicle, public EnergyConsumer {
  private:
   std::shared_ptr<ModelSpec> spec_;
+
  public:
-  Scooter(std::string id, std::string name, int score, double energy)
-      : Vehicle(id, name, score), EnergyConsumer(energy) {}
+  Scooter(std::string id, std::string name, int score, double energy,
+          std::shared_ptr<ModelSpec> spec = nullptr)
+      : Vehicle(id, name, score),
+        EnergyConsumer(energy),
+        spec_(std::move(spec)) {}
   std::string describe() const override { return "Scooter"; }
   double dailyEnergy() const override { return energy_; }
 
@@ -138,6 +142,7 @@ class Scooter : public Vehicle, public EnergyConsumer {
     std::cout << id_ << " " << name_ << " " << describe() << " "
               << noviceFriendly() << " " << dailyEnergy() << '\n';
   }
+  std::string modelName() const { return spec_ ? spec_->modelName : name_; }
 };
 
 class EBike : public Vehicle, public EnergyConsumer {
@@ -307,10 +312,10 @@ int main() {
   std::cout << park.size() << "\n";
   std::cout << park.energy() << "\n";
   park.remove("S-2");
-  
+
   auto commonSpec = std::make_shared<ModelSpec>("Turbo67Pro");
-  park.add(std::make_unique<Scooter>("S-3", "Turbo67Pro", 6, 2.0));
-  park.add(std::make_unique<Scooter>("S-4", "Turbo67Pro", 7, 1.75));
+  park.add(std::make_unique<Scooter>("S-3", "Turbo67Pro", 6, 2.0, commonSpec));
+  park.add(std::make_unique<Scooter>("S-4", "Turbo67Pro", 7, 1.75, commonSpec));
   std::cout << commonSpec.use_count() << "\n";
   std::cout << park.size() << "\n";
   std::cout << park.energy() << "\n";
