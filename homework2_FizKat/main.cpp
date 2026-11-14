@@ -1,3 +1,4 @@
+#include <algorithm>
 #include <iostream>
 #include <memory>
 #include <string>
@@ -114,8 +115,42 @@ class Helmet : public InventoryItem {
   }
 };
 
-// creating basic elements of our inventory
-std::vector<std::unique_ptr<InventoryItem>> items_;
+// created a new type for a vector
+template <typename T>
+class Reg {
+ private:
+  std::vector<T> info_;
+
+ public:
+  void add(T value) { info_.push_back(std::move(value)); }
+
+  std::size_t size() const { return info_.size(); }
+};
+
+class Park {
+ private:
+  Reg<std::unique_ptr<InventoryItem>> items_;
+
+ public:
+  std::size_t size() const { return items_.size(); }
+  void add(std::unique_ptr<InventoryItem> item) { items_.add(std::move(item)); }
+  void list() const {
+    for (const auto& item : items_) {
+      std::cout << item->inventoryId() << "\n";
+    }
+  }
+  double energy() const {
+    double total = 0;
+    for (const auto& item : items_) {
+      auto* consumer = dynamic_cast<EnergyConsumer*>(item.get())
+
+      if (consumer != nullptr) {
+        total += consumer->dailyEnergy();
+      }
+    }
+    return total;
+  }
+};
 
 int main() {
   Helmet h1("H-1", "ya_mob_I_love_yandex");
@@ -126,7 +161,7 @@ int main() {
             << test_1.describe() << '\n';
 
   // added vehicles
-  Bike bike1("B-1", "wrooom", 0);
+  Bike bike1("B-1", "Wrooom", 0);
   Scooter scooter1("S-1", "Turbo67", 6, 2.0);
   EBike ebike1("E-1", "Pro", 7, 1.0);
 
