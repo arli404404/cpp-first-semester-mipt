@@ -13,6 +13,14 @@ class InventoryItem {
   virtual std::string describe() const = 0;
 };
 
+std::ostream& operator<<(std::ostream& out, const InventoryItem& item) {
+  return out << item.inventoryId() << " " << item.name();
+}
+
+bool operator<(const InventoryItem& l, const InventoryItem& r) {
+    return l.inventoryId() < r.inventoryId();
+}
+
 // Vehicle classes
 
 constexpr int newbieFriendlyScore = 6;
@@ -123,7 +131,9 @@ class Reg {
 
  public:
   void add(T value) { info_.push_back(std::move(value)); }
+  auto begin() const { return info_.begin(); }
 
+  auto end() const { return info_.end(); }
   std::size_t size() const { return info_.size(); }
 };
 
@@ -136,13 +146,13 @@ class Park {
   void add(std::unique_ptr<InventoryItem> item) { items_.add(std::move(item)); }
   void list() const {
     for (const auto& item : items_) {
-      std::cout << item->inventoryId() << "\n";
+      std::cout << *item << "\n";
     }
   }
   double energy() const {
     double total = 0;
     for (const auto& item : items_) {
-      auto* consumer = dynamic_cast<EnergyConsumer*>(item.get())
+      auto* consumer = dynamic_cast<EnergyConsumer*>(item.get());
 
       if (consumer != nullptr) {
         total += consumer->dailyEnergy();
@@ -169,8 +179,12 @@ int main() {
   scooter1.print();
   ebike1.print();
 
-  // added Dock
-  Dock dock1("D-1", "SuperDock", 1.5);
-  dock1.print();
+  Park park;
+  park.add(std::make_unique<Helmet>("H-2", "ya_mob_I_love_T_Bank"));
+  park.add(std::make_unique<Scooter>("S-2", "Turbo67", 6, 2.0));
+  park.add(std::make_unique<Dock>("D-1", "SuperDock", 1.5));
+  park.list();
+  std::cout << park.size() << "\n";
+  std::cout << park.energy() << "\n";
   return 0;
 }
