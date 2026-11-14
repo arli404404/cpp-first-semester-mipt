@@ -30,6 +30,6 @@ int main() {
 
   // attempting to show polymorphism
   InventoryItem& test_1 = h1;
-  std::cout << test_1.inventoryId() << " " << test_1.name() << test_1.describe();
+  std::cout << test_1.inventoryId() << " " << test_1.name() << " " << test_1.describe();
   return 0;
 }
