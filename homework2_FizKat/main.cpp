@@ -63,11 +63,16 @@ void invalidScore(int score) {
 // designing Inventory
 
 class InventoryItem {
+ private:
+  std::shared_ptr<int> lifetime_ = std::make_shared<int>(0);
+
  public:
   virtual ~InventoryItem() = default;
   virtual std::string inventoryId() const = 0;
   virtual std::string name() const = 0;
   virtual std::string describe() const = 0;
+
+  std::weak_ptr<int> lifetime() const { return lifetime_; }
 };
 
 std::ostream& operator<<(std::ostream& out, const InventoryItem& item) {
@@ -217,8 +222,38 @@ class Reg {
 class Park {
  private:
   Reg<std::unique_ptr<InventoryItem>> items_;
+  std::weak_ptr<int> focus_;
+  std::string focusId_;
+  bool hasFocus_ = false;
 
  public:
+  void focus(const std::string& id) {
+    for (const auto& item : items_) {
+      if (item->inventoryId() == id) {
+        focus_ = item->lifetime();
+        focusId_ = id;
+        hasFocus_ = true;
+        return;
+      }
+    }
+
+    throw ParkError("item not found");
+  }
+  void showFocus() const {
+    if (!hasFocus_ || focus_.expired()) {
+      std::cout << "removed / expired\n";
+      return;
+    }
+
+    for (const auto& item : items_) {
+      if (item->inventoryId() == focusId_) {
+        std::cout << *item << '\n';
+        return;
+      }
+    }
+
+    std::cout << "removed / expired\n";
+  }
   std::size_t size() const { return items_.size(); }
   void add(std::unique_ptr<InventoryItem> item) { items_.add(std::move(item)); }
   void list() const {
@@ -319,5 +354,13 @@ int main() {
   std::cout << commonSpec.use_count() << "\n";
   std::cout << park.size() << "\n";
   std::cout << park.energy() << "\n";
+  park.focus("S-3");
+  park.showFocus();
+
+  park.remove("S-3");
+  park.showFocus();
+
+  park.focus("S-4");
+  park.showFocus();
   return 0;
 }
