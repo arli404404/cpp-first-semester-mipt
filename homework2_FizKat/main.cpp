@@ -1,17 +1,40 @@
 #include <algorithm>
+#include <cctype>
 #include <iostream>
 #include <memory>
 #include <stdexcept>
 #include <string>
 #include <utility>
 #include <vector>
-// Checking if the name contains "broken"
+
+// Classes for errors I wanna sleep
+class ParkError : public std::runtime_error {
+ public:
+  ParkError(const std::string& m) : std::runtime_error(m) {}
+};
+
+class InspectionRejected : public ParkError {
+ public:
+  InspectionRejected() : ParkError("inspection rejected") {}
+};
+
+class NegativeEnergy : public ParkError {
+ public:
+  NegativeEnergy() : ParkError("negrative energy") {}
+};
+
 void inspect(const std::string& name) {
   std::string n = name;
   std::transform(n.begin(), n.end(), n.begin(),
-                   [](unsigned char c) { return std::tolower(c); });
+                 [](unsigned char c) { return std::tolower(c); });
   if (n.find("broken") != std::string::npos) {
-    throw std::runtime_error("inspection rejected");
+    throw InspectionRejected();
+  }
+}
+
+void invalidEnergy(double energy) {
+  if (energy < 0) {
+    throw NegativeEnergy();
   }
 }
 
@@ -159,7 +182,22 @@ class Park {
 
  public:
   std::size_t size() const { return items_.size(); }
-  void add(std::unique_ptr<InventoryItem> item) { items_.add(std::move(item)); }
+  void add(std::unique_ptr<InventoryItem> item) {
+    try {
+      auto* consumer = dynamic_cast<EnergyConsumer*>(item.get());
+      auto* inv = dynamic_cast<InventoryItem*>(item.get());
+
+      if (consumer != nullptr) {
+        invalidEnergy(consumer->dailyEnergy());
+      }
+      if (inv != nullptr) {
+        inspect(inv->name());
+      }
+      items_.add(std::move(item));
+    } catch (const std::exception& error) {
+      std::cout << "error: " << error.what() << '\n';
+    }
+  }
   void list() const {
     std::vector<const InventoryItem*> sorted;
     for (const auto& item : items_) {
@@ -212,15 +250,9 @@ int main() {
   // added vehicles
 
   Park park;
-  try {
-    inspect("brokenX");
-
-    park.add(std::make_unique<Scooter>("S-1", "brokenX", 8, 2.5));
-
-  } catch (const std::exception& error) {
-    std::cout << "error: " << error.what() << '\n';
-  }
+  park.add(std::make_unique<Scooter>("S-1", "brokenX", 8, 2.5));
   park.add(std::make_unique<Helmet>("H-2", "ya_mob_I_love_T_Bank"));
+  park.add(std::make_unique<Scooter>("S-0", "Turbo69420", 6, -1.0));
   park.add(std::make_unique<Scooter>("S-2", "Turbo67", 6, 2.0));
   park.add(std::make_unique<Dock>("D-1", "SuperDock", 1.5));
   park.list();
