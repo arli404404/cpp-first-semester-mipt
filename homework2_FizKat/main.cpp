@@ -1,9 +1,16 @@
 #include <algorithm>
 #include <iostream>
 #include <memory>
+#include <stdexcept>
 #include <string>
 #include <utility>
 #include <vector>
+// Checking if the name contains "broken"
+void inspect(const std::string& name) {
+  if (name == "broken") {
+    throw std::runtime_error("inspection rejected");
+  }
+}
 
 class InventoryItem {
  public:
@@ -138,7 +145,8 @@ class Reg {
   T& operator[](std::size_t i) { return info_[i]; }
   template <typename C>
   void removeIf(C condition) {
-    info_.erase(std::remove_if(info_.begin(), info_.end(), condition), info_.end());
+    info_.erase(std::remove_if(info_.begin(), info_.end(), condition),
+                info_.end());
   }
 };
 
@@ -157,6 +165,9 @@ class Park {
     std::sort(
         sorted.begin(), sorted.end(),
         [](const InventoryItem* a, const InventoryItem* b) { return *a < *b; });
+    for (const auto* item : sorted) {
+      std::cout << *item << "\n";
+    }
   }
   double energy() const {
     double total = 0;
@@ -182,9 +193,8 @@ class Park {
     }
   }
   void remove(const std::string& id) {
-    items_.removeIf([&id](const auto& item) {
-      return item->inventoryId() = id;
-    });
+    items_.removeIf(
+        [&id](const auto& item) { return item->inventoryId() == id; });
   }
 };
 
@@ -199,6 +209,14 @@ int main() {
   // added vehicles
 
   Park park;
+  try {
+    inspect("broken");
+
+    park.add(std::make_unique<Scooter>("S-1", "broken", 8, 2.5));
+
+  } catch (const std::exception& error) {
+    std::cout << "error: " << error.what() << '\n';
+  }
   park.add(std::make_unique<Helmet>("H-2", "ya_mob_I_love_T_Bank"));
   park.add(std::make_unique<Scooter>("S-2", "Turbo67", 6, 2.0));
   park.add(std::make_unique<Dock>("D-1", "SuperDock", 1.5));
