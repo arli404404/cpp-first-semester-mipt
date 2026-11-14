@@ -11,6 +11,8 @@ class InventoryItem {
   virtual std::string describe() const = 0;
 };
 
+// Vehicle classes
+
 constexpr int newbieFriendlyScore = 6;
 
 class Vehicle : public InventoryItem {
@@ -22,11 +24,19 @@ class Vehicle : public InventoryItem {
  public:
   Vehicle(std::string id, std::string name, int score)
       : id_(std::move(id)), name_(std::move(name)), score_(std::move(score)) {}
-  virtual bool noviceFriendly() const {
-    return score_ >= newbieFriendlyScore;
-  }
+  virtual bool noviceFriendly() const { return score_ >= newbieFriendlyScore; }
   std::string inventoryId() const override { return id_; }
   std::string name() const override { return name_; }
+};
+
+class EnergyConsumer {
+ protected:
+  double energy_;
+
+ public:
+  virtual ~EnergyConsumer() = default;
+  EnergyConsumer(double energy) : energy_(energy) {}
+  virtual double dailyEnergy() const = 0;
 };
 
 class Bike : public Vehicle {
@@ -34,31 +44,54 @@ class Bike : public Vehicle {
   Bike(std::string id, std::string name, int score)
       : Vehicle(id, name, score) {}
   std::string describe() const override { return "Bike"; }
+
+  void print() const {
+    std::cout << id_ << " " << name_ << describe() << noviceFriendly() << '\n';
+  }
 };
 
-class Scooter : public Vehicle {
- private:
-  double energy_;
-
+class Scooter : public Vehicle, public EnergyConsumer {
  public:
   Scooter(std::string id, std::string name, int score, double energy)
-      : Vehicle(id, name, score), energy_(energy) {}
+      : Vehicle(id, name, score), EnergyConsumer(energy) {}
   std::string describe() const override { return "Scooter"; }
-  double dailyEnergy() const { return energy_; }
+  double dailyEnergy() const override { return energy_; }
+
+  void print() const {
+    std::cout << id_ << " " << name_ << describe() << noviceFriendly()
+              << dailyEnergy() << '\n';
+  }
 };
 
-class EBike : public Vehicle {
- private:
-  double energy_;
-
+class EBike : public Vehicle, public EnergyConsumer {
  public:
   EBike(std::string id, std::string name, int score, double energy)
-      : Vehicle(id, name, score), energy_(energy) {}
+      : Vehicle(id, name, score), EnergyConsumer(energy) {}
   std::string describe() const override { return "Electric bike"; }
-  double dailyEnergy() const { return energy_; }
+  double dailyEnergy() const override { return energy_; }
+
+  void print() const {
+    std::cout << id_ << " " << name_ << describe() << noviceFriendly()
+              << dailyEnergy() << '\n';
+  }
 };
 
+// Items and Dock classes
 
+class Dock : public InventoryItem, public EnergyConsumer {
+ private:
+  std::string id_;
+  std::string name_;
+
+ public:
+  Dock(std::string id, std::string name, double energy)
+      : id_(std::move(id)), name_(std::move(name)), EnergyConsumer(energy) {}
+  std::string inventoryId() const override { return id_; }
+  std::string name() const override { return name_; }
+  std::string describe() const override { return "Dock"; }
+  double dailyEnergy() const override { return energy_; }
+  void print() const { std::cout << id_ << " " << name_ << describe() << dailyEnergy() << '\n'; }
+};
 
 class Helmet : public InventoryItem {
  private:
@@ -86,5 +119,13 @@ int main() {
   Bike bike1("B-1", "wrooom", 0);
   Scooter scooter1("S-1", "Turbo67", 6, 2.0);
   EBike ebike("B-1", "Pro", 7, 1.0);
+
+  Bike.print();
+  Scooter.print();
+  EBike.print();
+  
+  // added Dock
+  Dock dock1("D-1", "SuperDock", 1.5);
+  Dock.print();
   return 0;
 }
