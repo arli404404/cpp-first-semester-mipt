@@ -11,7 +11,7 @@
 #include <utility>
 #include <vector>
 
-// Classes for errors I wanna sleep
+// Classes for errors
 class ParkError : public std::runtime_error {
  public:
   ParkError(const std::string& m) : std::runtime_error(m) {}
@@ -207,6 +207,8 @@ class Helmet : public InventoryItem {
     std::cout << id_ << " " << name_ << " " << describe() << '\n';
   }
 };
+
+// added Cola cuz every student needs Cola
 
 class Cola : public InventoryItem {
  private:
