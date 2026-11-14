@@ -162,7 +162,7 @@ class Park {
     }
     return total;
   }
-  void list() const {
+  void novice() const {
     for (const auto& item : items_) {
       auto* vehicle = dynamic_cast<Vehicle*>(item.get());
 
