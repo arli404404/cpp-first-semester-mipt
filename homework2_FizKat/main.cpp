@@ -46,7 +46,7 @@ class Bike : public Vehicle {
   std::string describe() const override { return "Bike"; }
 
   void print() const {
-    std::cout << id_ << " " << name_ << describe() << noviceFriendly() << '\n';
+    std::cout << id_ << " " << name_ << " " << describe()<< " " << noviceFriendly() << '\n';
   }
 };
 
@@ -58,7 +58,7 @@ class Scooter : public Vehicle, public EnergyConsumer {
   double dailyEnergy() const override { return energy_; }
 
   void print() const {
-    std::cout << id_ << " " << name_ << describe() << noviceFriendly()
+    std::cout << id_ << " " << name_ << " "<< describe()<< " " << noviceFriendly()<< " "
               << dailyEnergy() << '\n';
   }
 };
@@ -71,7 +71,7 @@ class EBike : public Vehicle, public EnergyConsumer {
   double dailyEnergy() const override { return energy_; }
 
   void print() const {
-    std::cout << id_ << " " << name_ << describe() << noviceFriendly()
+    std::cout << id_ << " " << name_<< " " << describe()<< " " << noviceFriendly()<< " "
               << dailyEnergy() << '\n';
   }
 };
@@ -85,12 +85,12 @@ class Dock : public InventoryItem, public EnergyConsumer {
 
  public:
   Dock(std::string id, std::string name, double energy)
-      : id_(std::move(id)), name_(std::move(name)), EnergyConsumer(energy) {}
+      :  EnergyConsumer(energy), id_(std::move(id)), name_(std::move(name)) {}
   std::string inventoryId() const override { return id_; }
   std::string name() const override { return name_; }
   std::string describe() const override { return "Dock"; }
   double dailyEnergy() const override { return energy_; }
-  void print() const { std::cout << id_ << " " << name_ << describe() << dailyEnergy() << '\n'; }
+  void print() const { std::cout << id_ << " " << name_<< " " << describe()<< " " << dailyEnergy()<< " " << '\n'; }
 };
 
 class Helmet : public InventoryItem {
@@ -104,7 +104,7 @@ class Helmet : public InventoryItem {
   std::string inventoryId() const override { return id_; }
   std::string name() const override { return name_; }
   std::string describe() const override { return "Helmet"; }
-  void print() const { std::cout << id_ << " " << name_ << describe() << '\n'; }
+  void print() const { std::cout << id_ << " " << name_<< " " << describe() << '\n'; }
 };
 
 int main() {
@@ -113,19 +113,19 @@ int main() {
   // attempting to show polymorphism
   InventoryItem& test_1 = h1;
   std::cout << test_1.inventoryId() << " " << test_1.name() << " "
-            << test_1.describe();
+            << test_1.describe() << '\n';
 
   // added vehicles
   Bike bike1("B-1", "wrooom", 0);
   Scooter scooter1("S-1", "Turbo67", 6, 2.0);
-  EBike ebike("B-1", "Pro", 7, 1.0);
+  EBike ebike1("B-1", "Pro", 7, 1.0);
 
-  Bike.print();
-  Scooter.print();
-  EBike.print();
-  
+  bike1.print();
+  scooter1.print();
+  ebike1.print();
+
   // added Dock
   Dock dock1("D-1", "SuperDock", 1.5);
-  Dock.print();
+  dock1.print();
   return 0;
 }
