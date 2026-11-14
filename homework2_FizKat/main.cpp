@@ -22,4 +22,4 @@ int main() {
   test_1.print();
   test_2.print();
   return 0;
-};
+}
