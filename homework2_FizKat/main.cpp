@@ -356,190 +356,176 @@ class Park {
   }
 };
 
-
 int main() {
-    Park park;
-    std::unordered_map<std::string, std::shared_ptr<ModelSpec>> specs;
+  Park park;
+  std::unordered_map<std::string, std::shared_ptr<ModelSpec>> specs;
 
-    std::string line;
+  std::string line;
 
-    while (std::getline(std::cin, line)) {
-        std::istringstream input(line);
-        std::string command;
+  while (std::getline(std::cin, line)) {
+    std::istringstream input(line);
+    std::string command;
 
-        if (!(input >> command)) {
-            continue;
-        }
-
-        try {
-            auto checkEnd = [&input]() {
-                std::string extra;
-                if (input >> extra) {
-                    throw ParkError("too much argumentss");
-                }
-            };
-
-            if (command == "quit") {
-                checkEnd();
-                break;
-            }
-
-            else if (command == "list") {
-                checkEnd();
-                park.list();
-            }
-
-            else if (command == "energy") {
-                checkEnd();
-                std::cout << std::fixed << std::setprecision(1)
-                          << park.energy() << '\n';
-            }
-
-            else if (command == "novice") {
-                checkEnd();
-                park.novice();
-            }
-
-            else if (command == "count_novice") {
-                checkEnd();
-                std::cout << park.countNovice() << '\n';
-            }
-
-            else if (command == "size") {
-                checkEnd();
-                std::cout << park.size() << '\n';
-            }
-
-            else if (command == "show_focus") {
-                checkEnd();
-                park.showFocus();
-            }
-
-            else if (command == "focus") {
-                std::string id;
-
-                if (!(input >> id)) {
-                    throw ParkError("invalid arguments");
-                }
-
-                checkEnd();
-                park.focus(id);
-            }
-
-            else if (command == "remove") {
-                std::string id;
-
-                if (!(input >> id)) {
-                    throw ParkError("invalid argument");
-                }
-
-                checkEnd();
-                park.remove(id);
-            }
-
-            else if (command == "add") {
-                std::string type, id, name;
-
-                if (!(input >> type >> id >> name)) {
-                    throw ParkError("invalid argument");
-                }
-
-                if (type == "scooter") {
-                    double energy;
-                    int score;
-
-                    if (!(input >> energy >> score)) {
-                        throw ParkError("invalid argument");
-                    }
-
-                    checkEnd();
-                    auto it = specs.find(name);
-                    std::shared_ptr<ModelSpec> spec;
-
-                    if (it == specs.end()) {
-                        spec = std::make_shared<ModelSpec>(name);
-                    } else {
-                        spec = it->second;
-                    }
-
-                    park.add(std::make_unique<Scooter>(
-                        id, name, score, energy, spec
-                    ));
-                    specs[name] = std::move(spec);
-                }
-
-                else if (type == "bike") {
-                    int score;
-
-                    if (!(input >> score)) {
-                        throw ParkError("invalid argument");
-                    }
-
-                    checkEnd();
-
-                    park.add(std::make_unique<Bike>(
-                        id, name, score
-                    ));
-                }
-
-                else if (type == "ebike") {
-                    double energy;
-                    int score;
-
-                    if (!(input >> energy >> score)) {
-                        throw ParkError("invalid argument");
-                    }
-
-                    checkEnd();
-
-                    park.add(std::make_unique<EBike>(
-                        id, name, score, energy
-                    ));
-                }
-
-                else if (type == "helmet") {
-                    checkEnd();
-
-                    park.add(std::make_unique<Helmet>(
-                        id, name
-                    ));
-                }
-
-                else if (type == "dock") {
-                    double energy;
-
-                    if (!(input >> energy)) {
-                        throw ParkError("invalid argumenr");
-                    }
-
-                    checkEnd();
-
-                    park.add(std::make_unique<Dock>(
-                        id, name, energy
-                    ));
-                }
-
-                else if (type == "cola") {
-                    checkEnd();
-
-                    park.add(std::make_unique<Cola>(
-                        id, name
-                    ));
-                }
-
-                else {
-                    throw ParkError("unknown item");
-                }
-            }
-
-            else {
-                throw ParkError("no such command");
-            }
-        }
-        catch (const std::exception& error) {
-            std::cout << "error: " << error.what() << '\n';
-        }
+    if (!(input >> command)) {
+      continue;
     }
 
-    return 0;
+    try {
+      auto checkEnd = [&input]() {
+        std::string extra;
+        if (input >> extra) {
+          throw ParkError("too much argumentss");
+        }
+      };
+
+      if (command == "quit") {
+        checkEnd();
+        break;
+      }
+
+      else if (command == "list") {
+        checkEnd();
+        park.list();
+      }
+
+      else if (command == "energy") {
+        checkEnd();
+        std::cout << std::fixed << std::setprecision(1) << park.energy()
+                  << '\n';
+      }
+
+      else if (command == "novice") {
+        checkEnd();
+        park.novice();
+      }
+
+      else if (command == "count_novice") {
+        checkEnd();
+        std::cout << park.countNovice() << '\n';
+      }
+
+      else if (command == "size") {
+        checkEnd();
+        std::cout << park.size() << '\n';
+      }
+
+      else if (command == "show_focus") {
+        checkEnd();
+        park.showFocus();
+      }
+
+      else if (command == "focus") {
+        std::string id;
+
+        if (!(input >> id)) {
+          throw ParkError("invalid arguments");
+        }
+
+        checkEnd();
+        park.focus(id);
+      }
+
+      else if (command == "remove") {
+        std::string id;
+
+        if (!(input >> id)) {
+          throw ParkError("invalid argument");
+        }
+
+        checkEnd();
+        park.remove(id);
+      }
+
+      else if (command == "add") {
+        std::string type, id, name;
+
+        if (!(input >> type >> id >> name)) {
+          throw ParkError("invalid argument");
+        }
+
+        if (type == "scooter") {
+          double energy;
+          int score;
+
+          if (!(input >> energy >> score)) {
+            throw ParkError("invalid argument");
+          }
+
+          checkEnd();
+          auto it = specs.find(name);
+          std::shared_ptr<ModelSpec> spec;
+
+          if (it == specs.end()) {
+            spec = std::make_shared<ModelSpec>(name);
+          } else {
+            spec = it->second;
+          }
+
+          park.add(std::make_unique<Scooter>(id, name, score, energy, spec));
+          specs[name] = std::move(spec);
+        }
+
+        else if (type == "bike") {
+          int score;
+
+          if (!(input >> score)) {
+            throw ParkError("invalid argument");
+          }
+
+          checkEnd();
+
+          park.add(std::make_unique<Bike>(id, name, score));
+        }
+
+        else if (type == "ebike") {
+          double energy;
+          int score;
+
+          if (!(input >> energy >> score)) {
+            throw ParkError("invalid argument");
+          }
+
+          checkEnd();
+
+          park.add(std::make_unique<EBike>(id, name, score, energy));
+        }
+
+        else if (type == "helmet") {
+          checkEnd();
+
+          park.add(std::make_unique<Helmet>(id, name));
+        }
+
+        else if (type == "dock") {
+          double energy;
+
+          if (!(input >> energy)) {
+            throw ParkError("invalid argumenr");
+          }
+
+          checkEnd();
+
+          park.add(std::make_unique<Dock>(id, name, energy));
+        }
+
+        else if (type == "cola") {
+          checkEnd();
+
+          park.add(std::make_unique<Cola>(id, name));
+        }
+
+        else {
+          throw ParkError("unknown item");
+        }
+      }
+
+      else {
+        throw ParkError("no such command");
+      }
+    } catch (const std::exception& error) {
+      std::cout << "error: " << error.what() << '\n';
+    }
+  }
+
+  return 0;
 }
