@@ -60,6 +60,8 @@ void invalidScore(int score) {
   }
 }
 
+// designing Inventory
+
 class InventoryItem {
  public:
   virtual ~InventoryItem() = default;
@@ -75,6 +77,13 @@ std::ostream& operator<<(std::ostream& out, const InventoryItem& item) {
 bool operator<(const InventoryItem& l, const InventoryItem& r) {
   return l.inventoryId() < r.inventoryId();
 }
+
+class ModelSpec {
+ public:
+  std::string modelName;
+
+  ModelSpec(std::string name) : modelName(std::move(name)) {}
+};
 
 // Vehicle classes
 
@@ -117,6 +126,8 @@ class Bike : public Vehicle {
 };
 
 class Scooter : public Vehicle, public EnergyConsumer {
+ private:
+  std::shared_ptr<ModelSpec> spec_;
  public:
   Scooter(std::string id, std::string name, int score, double energy)
       : Vehicle(id, name, score), EnergyConsumer(energy) {}
@@ -286,7 +297,7 @@ int main() {
     inspect("Turbo69420");
     invalidScore(6);
     invalidEnergy(-1.0);
-  park.add(std::make_unique<Scooter>("S-0", "Turbo69420", 6, -1.0));
+    park.add(std::make_unique<Scooter>("S-0", "Turbo69420", 6, -1.0));
   } catch (const std::exception& error) {
     std::cout << "error: " << error.what() << '\n';
   }
@@ -296,6 +307,11 @@ int main() {
   std::cout << park.size() << "\n";
   std::cout << park.energy() << "\n";
   park.remove("S-2");
+  
+  auto commonSpec = std::make_shared<ModelSpec>("Turbo67Pro");
+  park.add(std::make_unique<Scooter>("S-3", "Turbo67Pro", 6, 2.0));
+  park.add(std::make_unique<Scooter>("S-4", "Turbo67Pro", 7, 1.75));
+  std::cout << commonSpec.use_count() << "\n";
   std::cout << park.size() << "\n";
   std::cout << park.energy() << "\n";
   return 0;
