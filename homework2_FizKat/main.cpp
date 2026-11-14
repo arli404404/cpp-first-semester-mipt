@@ -41,9 +41,8 @@ class Scooter : public Vehicle {
   double energy_;
 
  public:
-  Scooter(std::string id, std::string name, int score)
-      : Vehicle(id, name, score) {}
-  Scooter(double energy) : energy_(energy) {}
+  Scooter(std::string id, std::string name, int score, double energy)
+      : Vehicle(id, name, score), energy_(energy) {}
   std::string describe() const override { return "Scooter"; }
   double dailyEnergy() const { return energy_; }
 };
@@ -53,9 +52,8 @@ class EBike : public Vehicle {
   double energy_;
 
  public:
-  EBike(std::string id, std::string name, int score)
-      : Vehicle(id, name, score) {}
-  EBike(double energy) : energy_(energy) {}
+  EBike(std::string id, std::string name, int score, double energy)
+      : Vehicle(id, name, score), energy_(energy) {}
   std::string describe() const override { return "Electric bike"; }
   double dailyEnergy() const { return energy_; }
 };
@@ -86,7 +84,7 @@ int main() {
 
   // added vehicles
   Bike bike1("B-1", "wrooom", 0);
-  Scooter scooter1("S-1", "Turbo67", 6);
-  EBike ebike("B-1", "Pro", 7);
+  Scooter scooter1("S-1", "Turbo67", 6, 2.0);
+  EBike ebike("B-1", "Pro", 7, 1.0);
   return 0;
 }
