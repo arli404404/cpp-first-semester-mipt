@@ -136,20 +136,27 @@ class Reg {
   auto end() const { return info_.end(); }
   std::size_t size() const { return info_.size(); }
   T& operator[](std::size_t i) { return info_[i]; }
+  template <typename C>
+  void removeIf(C condition) {
+    info_.erase(std::remove_if(info_.begin(), info_.end(), condition), info_.end());
+  }
 };
 
 class Park {
  private:
   Reg<std::unique_ptr<InventoryItem>> items_;
-  std::vector<const InventoryItem*> sorted;
 
  public:
   std::size_t size() const { return items_.size(); }
   void add(std::unique_ptr<InventoryItem> item) { items_.add(std::move(item)); }
   void list() const {
+    std::vector<const InventoryItem*> sorted;
     for (const auto& item : items_) {
-      std::cout << *item << "\n";
+      sorted.push_back(item.get());
     }
+    std::sort(
+        sorted.begin(), sorted.end(),
+        [](const InventoryItem* a, const InventoryItem* b) { return *a < *b; });
   }
   double energy() const {
     double total = 0;
@@ -168,9 +175,16 @@ class Park {
 
       if (vehicle != nullptr) {
         bool friendliness = vehicle->noviceFriendly();
-        if (friendliness) {std::cout << *item << "\n";}
+        if (friendliness) {
+          std::cout << *item << "\n";
+        }
       }
     }
+  }
+  void remove(const std::string& id) {
+    items_.removeIf([&id](const auto& item) {
+      return item->inventoryId() = id;
+    });
   }
 };
 
@@ -183,19 +197,15 @@ int main() {
             << test_1.describe() << '\n';
 
   // added vehicles
-  Bike bike1("B-1", "Wrooom", 0);
-  Scooter scooter1("S-1", "Turbo67", 6, 2.0);
-  EBike ebike1("E-1", "Pro", 7, 1.0);
-
-  bike1.print();
-  scooter1.print();
-  ebike1.print();
 
   Park park;
   park.add(std::make_unique<Helmet>("H-2", "ya_mob_I_love_T_Bank"));
   park.add(std::make_unique<Scooter>("S-2", "Turbo67", 6, 2.0));
   park.add(std::make_unique<Dock>("D-1", "SuperDock", 1.5));
   park.list();
+  std::cout << park.size() << "\n";
+  std::cout << park.energy() << "\n";
+  park.remove("S-2");
   std::cout << park.size() << "\n";
   std::cout << park.energy() << "\n";
   return 0;
