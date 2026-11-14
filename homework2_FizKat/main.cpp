@@ -1,9 +1,13 @@
 #include <algorithm>
 #include <cctype>
+#include <cmath>
+#include <iomanip>
 #include <iostream>
 #include <memory>
+#include <sstream>
 #include <stdexcept>
 #include <string>
+#include <unordered_map>
 #include <utility>
 #include <vector>
 
@@ -43,7 +47,7 @@ void inspect(const std::string& name) {
 }
 
 void invalidEnergy(double energy) {
-  if (energy < 0) {
+  if (!std::isfinite(energy) || energy < 0) {
     throw NegativeEnergy();
   }
 }
@@ -83,6 +87,10 @@ bool operator<(const InventoryItem& l, const InventoryItem& r) {
   return l.inventoryId() < r.inventoryId();
 }
 
+bool operator==(const InventoryItem& a, const InventoryItem& b) {
+  return a.inventoryId() == b.inventoryId();
+}
+
 class ModelSpec {
  public:
   std::string modelName;
@@ -106,6 +114,7 @@ class Vehicle : public InventoryItem {
   virtual bool noviceFriendly() const { return score_ >= newbieFriendlyScore; }
   std::string inventoryId() const override { return id_; }
   std::string name() const override { return name_; }
+  int score() const { return score_; }
 };
 
 class EnergyConsumer {
@@ -199,6 +208,20 @@ class Helmet : public InventoryItem {
   }
 };
 
+class Cola : public InventoryItem {
+ private:
+  std::string id_;
+  std::string name_;
+
+ public:
+  Cola(std::string id, std::string name)
+      : id_(std::move(id)), name_(std::move(name)) {}
+
+  std::string inventoryId() const override { return id_; }
+  std::string name() const override { return name_; }
+  std::string describe() const override { return "Cola"; }
+};
+
 // created a new type for a vector
 template <typename T>
 class Reg {
@@ -254,8 +277,44 @@ class Park {
 
     std::cout << "removed / expired\n";
   }
+  std::size_t countNovice() const {
+    std::size_t count = 0;
+
+    for (const auto& item : items_) {
+      auto* vehicle = dynamic_cast<const Vehicle*>(item.get());
+
+      if (vehicle != nullptr && vehicle->noviceFriendly()) {
+        ++count;
+      }
+    }
+
+    return count;
+  }
   std::size_t size() const { return items_.size(); }
-  void add(std::unique_ptr<InventoryItem> item) { items_.add(std::move(item)); }
+  void add(std::unique_ptr<InventoryItem> item) {
+    if (!item) {
+      throw ParkError("null item");
+    }
+
+    emptyId(item->inventoryId());
+
+    for (const auto& existing : items_) {
+      if (*existing == *item) {
+        throw ParkError("duplicate ID");
+      }
+    }
+
+    if (auto* vehicle = dynamic_cast<Vehicle*>(item.get())) {
+      invalidScore(vehicle->score());
+      inspect(vehicle->name());
+    }
+
+    if (auto* consumer = dynamic_cast<EnergyConsumer*>(item.get())) {
+      invalidEnergy(consumer->dailyEnergy());
+    }
+
+    items_.add(std::move(item));
+  }
   void list() const {
     std::vector<const InventoryItem*> sorted;
     for (const auto& item : items_) {
@@ -297,70 +356,190 @@ class Park {
   }
 };
 
+
 int main() {
-  Helmet h1("H-1", "ya_mob_I_love_yandex");
+    Park park;
+    std::unordered_map<std::string, std::shared_ptr<ModelSpec>> specs;
 
-  // attempting to show polymorphism
-  InventoryItem& test_1 = h1;
-  std::cout << test_1.inventoryId() << " " << test_1.name() << " "
-            << test_1.describe() << '\n';
+    std::string line;
 
-  // added vehicles
+    while (std::getline(std::cin, line)) {
+        std::istringstream input(line);
+        std::string command;
 
-  Park park;
-  /*try {
-      auto* consumer = dynamic_cast<EnergyConsumer*>(item.get());
-      auto* vehicle = dynamic_cast<Vehicle*>(item.get());
+        if (!(input >> command)) {
+            continue;
+        }
 
-      if (consumer != nullptr) {
-        invalidEnergy(consumer->dailyEnergy());
-      }
-      if (vehicle != nullptr) {
-        inspect(vehicle->name());
-      }
+        try {
+            auto checkEnd = [&input]() {
+                std::string extra;
+                if (input >> extra) {
+                    throw ParkError("too much argumentss");
+                }
+            };
 
-    } catch (const std::exception& error) {
-      std::cout << "error: " << error.what() << '\n';
-    }*/
-  try {
-    emptyId("S-1");
-    inspect("brokenX");
-    invalidScore(8);
-    invalidEnergy(2.5);
-    park.add(std::make_unique<Scooter>("S-1", "brokenX", 8, 2.5));
-  } catch (const std::exception& error) {
-    std::cout << "error: " << error.what() << '\n';
-  }
-  park.add(std::make_unique<Helmet>("H-2", "ya_mob_I_love_T_Bank"));
-  try {
-    emptyId("S-1");
-    inspect("Turbo69420");
-    invalidScore(6);
-    invalidEnergy(-1.0);
-    park.add(std::make_unique<Scooter>("S-0", "Turbo69420", 6, -1.0));
-  } catch (const std::exception& error) {
-    std::cout << "error: " << error.what() << '\n';
-  }
-  park.add(std::make_unique<Scooter>("S-2", "Turbo67", 6, 2.0));
-  park.add(std::make_unique<Dock>("D-1", "SuperDock", 1.5));
-  park.list();
-  std::cout << park.size() << "\n";
-  std::cout << park.energy() << "\n";
-  park.remove("S-2");
+            if (command == "quit") {
+                checkEnd();
+                break;
+            }
 
-  auto commonSpec = std::make_shared<ModelSpec>("Turbo67Pro");
-  park.add(std::make_unique<Scooter>("S-3", "Turbo67Pro", 6, 2.0, commonSpec));
-  park.add(std::make_unique<Scooter>("S-4", "Turbo67Pro", 7, 1.75, commonSpec));
-  std::cout << commonSpec.use_count() << "\n";
-  std::cout << park.size() << "\n";
-  std::cout << park.energy() << "\n";
-  park.focus("S-3");
-  park.showFocus();
+            else if (command == "list") {
+                checkEnd();
+                park.list();
+            }
 
-  park.remove("S-3");
-  park.showFocus();
+            else if (command == "energy") {
+                checkEnd();
+                std::cout << std::fixed << std::setprecision(1)
+                          << park.energy() << '\n';
+            }
 
-  park.focus("S-4");
-  park.showFocus();
-  return 0;
+            else if (command == "novice") {
+                checkEnd();
+                park.novice();
+            }
+
+            else if (command == "count_novice") {
+                checkEnd();
+                std::cout << park.countNovice() << '\n';
+            }
+
+            else if (command == "size") {
+                checkEnd();
+                std::cout << park.size() << '\n';
+            }
+
+            else if (command == "show_focus") {
+                checkEnd();
+                park.showFocus();
+            }
+
+            else if (command == "focus") {
+                std::string id;
+
+                if (!(input >> id)) {
+                    throw ParkError("invalid arguments");
+                }
+
+                checkEnd();
+                park.focus(id);
+            }
+
+            else if (command == "remove") {
+                std::string id;
+
+                if (!(input >> id)) {
+                    throw ParkError("invalid argument");
+                }
+
+                checkEnd();
+                park.remove(id);
+            }
+
+            else if (command == "add") {
+                std::string type, id, name;
+
+                if (!(input >> type >> id >> name)) {
+                    throw ParkError("invalid argument");
+                }
+
+                if (type == "scooter") {
+                    double energy;
+                    int score;
+
+                    if (!(input >> energy >> score)) {
+                        throw ParkError("invalid argument");
+                    }
+
+                    checkEnd();
+                    auto it = specs.find(name);
+                    std::shared_ptr<ModelSpec> spec;
+
+                    if (it == specs.end()) {
+                        spec = std::make_shared<ModelSpec>(name);
+                    } else {
+                        spec = it->second;
+                    }
+
+                    park.add(std::make_unique<Scooter>(
+                        id, name, score, energy, spec
+                    ));
+                    specs[name] = std::move(spec);
+                }
+
+                else if (type == "bike") {
+                    int score;
+
+                    if (!(input >> score)) {
+                        throw ParkError("invalid argument");
+                    }
+
+                    checkEnd();
+
+                    park.add(std::make_unique<Bike>(
+                        id, name, score
+                    ));
+                }
+
+                else if (type == "ebike") {
+                    double energy;
+                    int score;
+
+                    if (!(input >> energy >> score)) {
+                        throw ParkError("invalid argument");
+                    }
+
+                    checkEnd();
+
+                    park.add(std::make_unique<EBike>(
+                        id, name, score, energy
+                    ));
+                }
+
+                else if (type == "helmet") {
+                    checkEnd();
+
+                    park.add(std::make_unique<Helmet>(
+                        id, name
+                    ));
+                }
+
+                else if (type == "dock") {
+                    double energy;
+
+                    if (!(input >> energy)) {
+                        throw ParkError("invalid argumenr");
+                    }
+
+                    checkEnd();
+
+                    park.add(std::make_unique<Dock>(
+                        id, name, energy
+                    ));
+                }
+
+                else if (type == "cola") {
+                    checkEnd();
+
+                    park.add(std::make_unique<Cola>(
+                        id, name
+                    ));
+                }
+
+                else {
+                    throw ParkError("unknown item");
+                }
+            }
+
+            else {
+                throw ParkError("no such command");
+            }
+        }
+        catch (const std::exception& error) {
+            std::cout << "error: " << error.what() << '\n';
+        }
+    }
+
+    return 0;
 }
