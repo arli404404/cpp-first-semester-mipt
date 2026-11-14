@@ -23,6 +23,16 @@ class NegativeEnergy : public ParkError {
   NegativeEnergy() : ParkError("negrative energy") {}
 };
 
+class EmptyId : public ParkError {
+ public:
+  EmptyId() : ParkError("empty ID") {}
+};
+
+class InvalidScore : public ParkError {
+ public:
+  InvalidScore() : ParkError("invalid score") {}
+};
+
 void inspect(const std::string& name) {
   std::string n = name;
   std::transform(n.begin(), n.end(), n.begin(),
@@ -35,6 +45,18 @@ void inspect(const std::string& name) {
 void invalidEnergy(double energy) {
   if (energy < 0) {
     throw NegativeEnergy();
+  }
+}
+
+void emptyId(std::string id) {
+  if (id == "") {
+    throw EmptyId();
+  }
+}
+
+void invalidScore(int score) {
+  if (score < 1 || score > 10) {
+    throw InvalidScore();
   }
 }
 
@@ -182,22 +204,7 @@ class Park {
 
  public:
   std::size_t size() const { return items_.size(); }
-  void add(std::unique_ptr<InventoryItem> item) {
-    try {
-      auto* consumer = dynamic_cast<EnergyConsumer*>(item.get());
-      auto* inv = dynamic_cast<InventoryItem*>(item.get());
-
-      if (consumer != nullptr) {
-        invalidEnergy(consumer->dailyEnergy());
-      }
-      if (inv != nullptr) {
-        inspect(inv->name());
-      }
-      items_.add(std::move(item));
-    } catch (const std::exception& error) {
-      std::cout << "error: " << error.what() << '\n';
-    }
-  }
+  void add(std::unique_ptr<InventoryItem> item) { items_.add(std::move(item)); }
   void list() const {
     std::vector<const InventoryItem*> sorted;
     for (const auto& item : items_) {
@@ -250,9 +257,39 @@ int main() {
   // added vehicles
 
   Park park;
-  park.add(std::make_unique<Scooter>("S-1", "brokenX", 8, 2.5));
+  /*try {
+      auto* consumer = dynamic_cast<EnergyConsumer*>(item.get());
+      auto* vehicle = dynamic_cast<Vehicle*>(item.get());
+
+      if (consumer != nullptr) {
+        invalidEnergy(consumer->dailyEnergy());
+      }
+      if (vehicle != nullptr) {
+        inspect(vehicle->name());
+      }
+
+    } catch (const std::exception& error) {
+      std::cout << "error: " << error.what() << '\n';
+    }*/
+  try {
+    emptyId("S-1");
+    inspect("brokenX");
+    invalidScore(8);
+    invalidEnergy(2.5);
+    park.add(std::make_unique<Scooter>("S-1", "brokenX", 8, 2.5));
+  } catch (const std::exception& error) {
+    std::cout << "error: " << error.what() << '\n';
+  }
   park.add(std::make_unique<Helmet>("H-2", "ya_mob_I_love_T_Bank"));
+  try {
+    emptyId("S-1");
+    inspect("Turbo69420");
+    invalidScore(6);
+    invalidEnergy(-1.0);
   park.add(std::make_unique<Scooter>("S-0", "Turbo69420", 6, -1.0));
+  } catch (const std::exception& error) {
+    std::cout << "error: " << error.what() << '\n';
+  }
   park.add(std::make_unique<Scooter>("S-2", "Turbo67", 6, 2.0));
   park.add(std::make_unique<Dock>("D-1", "SuperDock", 1.5));
   park.list();
