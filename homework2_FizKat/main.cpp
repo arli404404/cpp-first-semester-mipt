@@ -7,7 +7,10 @@
 #include <vector>
 // Checking if the name contains "broken"
 void inspect(const std::string& name) {
-  if (name == "broken") {
+  std::string n = name;
+  std::transform(n.begin(), n.end(), n.begin(),
+                   [](unsigned char c) { return std::tolower(c); });
+  if (n.find("broken") != std::string::npos) {
     throw std::runtime_error("inspection rejected");
   }
 }
@@ -210,9 +213,9 @@ int main() {
 
   Park park;
   try {
-    inspect("broken");
+    inspect("brokenX");
 
-    park.add(std::make_unique<Scooter>("S-1", "broken", 8, 2.5));
+    park.add(std::make_unique<Scooter>("S-1", "brokenX", 8, 2.5));
 
   } catch (const std::exception& error) {
     std::cout << "error: " << error.what() << '\n';
