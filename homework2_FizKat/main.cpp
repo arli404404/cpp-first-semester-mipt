@@ -11,7 +11,7 @@ class InventoryItem {
   virtual std::string describe() const = 0;
 };
 
-const int newbieFriendly = 6;
+constexpr int newbieFriendlyScore = 6;
 
 class Vehicle : public InventoryItem {
  protected:
@@ -23,12 +23,10 @@ class Vehicle : public InventoryItem {
   Vehicle(std::string id, std::string name, int score)
       : id_(std::move(id)), name_(std::move(name)), score_(std::move(score)) {}
   virtual bool noviceFriendly() const {
-    bool answer = true;
-    if (score_ > newbieFriendly) {
-      answer = false;
-    }
-    return answer;
+    return score_ >= newbieFriendlyScore;
   }
+  std::string inventoryId() const override { return id_; }
+  std::string name() const override { return name_; }
 };
 
 class Bike : public Vehicle {
@@ -45,6 +43,7 @@ class Scooter : public Vehicle {
  public:
   Scooter(std::string id, std::string name, int score)
       : Vehicle(id, name, score) {}
+  Scooter(double energy) : energy_(energy) {}
   std::string describe() const override { return "Scooter"; }
   double dailyEnergy() const { return energy_; }
 };
@@ -56,6 +55,7 @@ class EBike : public Vehicle {
  public:
   EBike(std::string id, std::string name, int score)
       : Vehicle(id, name, score) {}
+  EBike(double energy) : energy_(energy) {}
   std::string describe() const override { return "Electric bike"; }
   double dailyEnergy() const { return energy_; }
 };
