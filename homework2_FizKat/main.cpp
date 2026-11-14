@@ -18,7 +18,7 @@ std::ostream& operator<<(std::ostream& out, const InventoryItem& item) {
 }
 
 bool operator<(const InventoryItem& l, const InventoryItem& r) {
-    return l.inventoryId() < r.inventoryId();
+  return l.inventoryId() < r.inventoryId();
 }
 
 // Vehicle classes
@@ -135,11 +135,13 @@ class Reg {
 
   auto end() const { return info_.end(); }
   std::size_t size() const { return info_.size(); }
+  T& operator[](std::size_t i) { return info_[i]; }
 };
 
 class Park {
  private:
   Reg<std::unique_ptr<InventoryItem>> items_;
+  std::vector<const InventoryItem*> sorted;
 
  public:
   std::size_t size() const { return items_.size(); }
@@ -159,6 +161,16 @@ class Park {
       }
     }
     return total;
+  }
+  void list() const {
+    for (const auto& item : items_) {
+      auto* vehicle = dynamic_cast<Vehicle*>(item.get());
+
+      if (vehicle != nullptr) {
+        bool friendliness = vehicle->noviceFriendly();
+        if (friendliness) {std::cout << *item << "\n";}
+      }
+    }
   }
 };
 
