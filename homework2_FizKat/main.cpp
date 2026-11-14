@@ -11,6 +11,57 @@ class InventoryItem {
   virtual std::string describe() const = 0;
 };
 
+const int newbieFriendly = 6;
+
+class Vehicle : public InventoryItem {
+ protected:
+  std::string id_;
+  std::string name_;
+  int score_;
+
+ public:
+  Vehicle(std::string id, std::string name, int score)
+      : id_(std::move(id)), name_(std::move(name)), score_(std::move(score)) {}
+  virtual bool noviceFriendly() const {
+    bool answer = true;
+    if (score_ > newbieFriendly) {
+      answer = false;
+    }
+    return answer;
+  }
+};
+
+class Bike : public Vehicle {
+ public:
+  Bike(std::string id, std::string name, int score)
+      : Vehicle(id, name, score) {}
+  std::string describe() const override { return "Bike"; }
+};
+
+class Scooter : public Vehicle {
+ private:
+  double energy_;
+
+ public:
+  Scooter(std::string id, std::string name, int score)
+      : Vehicle(id, name, score) {}
+  std::string describe() const override { return "Scooter"; }
+  double dailyEnergy() const { return energy_; }
+};
+
+class EBike : public Vehicle {
+ private:
+  double energy_;
+
+ public:
+  EBike(std::string id, std::string name, int score)
+      : Vehicle(id, name, score) {}
+  std::string describe() const override { return "Electric bike"; }
+  double dailyEnergy() const { return energy_; }
+};
+
+
+
 class Helmet : public InventoryItem {
  private:
   std::string id_;
@@ -30,6 +81,12 @@ int main() {
 
   // attempting to show polymorphism
   InventoryItem& test_1 = h1;
-  std::cout << test_1.inventoryId() << " " << test_1.name() << " " << test_1.describe();
+  std::cout << test_1.inventoryId() << " " << test_1.name() << " "
+            << test_1.describe();
+
+  // added vehicles
+  Bike bike1("B-1", "wrooom", 0);
+  Scooter scooter1("S-1", "Turbo67", 6);
+  EBike ebike("B-1", "Pro", 7);
   return 0;
 }
