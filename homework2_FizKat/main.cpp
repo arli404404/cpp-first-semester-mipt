@@ -11,7 +11,7 @@
 #include <utility>
 #include <vector>
 
-// Classes for errors
+
 class ParkError : public std::runtime_error {
  public:
   ParkError(const std::string& m) : std::runtime_error(m) {}
@@ -64,7 +64,6 @@ void invalidScore(int score) {
   }
 }
 
-// designing Inventory
 
 class InventoryItem {
  private:
@@ -172,7 +171,7 @@ class EBike : public Vehicle, public EnergyConsumer {
   }
 };
 
-// Items and Dock classes
+
 
 class Dock : public InventoryItem, public EnergyConsumer {
  private:
@@ -208,20 +207,20 @@ class Helmet : public InventoryItem {
   }
 };
 
-// added Cola cuz every student needs Cola
 
-class Cola : public InventoryItem {
+
+class Burger : public InventoryItem {
  private:
   std::string id_;
   std::string name_;
 
  public:
-  Cola(std::string id, std::string name)
+  Burger(std::string id, std::string name)
       : id_(std::move(id)), name_(std::move(name)) {}
 
   std::string inventoryId() const override { return id_; }
   std::string name() const override { return name_; }
-  std::string describe() const override { return "Cola"; }
+  std::string describe() const override { return "Burger"; }
 };
 
 // created a new type for a vector
@@ -510,10 +509,10 @@ int main() {
           park.add(std::make_unique<Dock>(id, name, energy));
         }
 
-        else if (type == "cola") {
+        else if (type == "burger") {
           checkEnd();
 
-          park.add(std::make_unique<Cola>(id, name));
+          park.add(std::make_unique<Burger>(id, name));
         }
 
         else {
